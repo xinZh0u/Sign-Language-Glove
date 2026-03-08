@@ -73,6 +73,38 @@ class Ui_Widget(object):
 
         self.verticalLayout_2 = QVBoxLayout()
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
+        self.horizontalLayout_9 = QHBoxLayout()
+        self.horizontalLayout_9.setObjectName(u"horizontalLayout_9")
+        self.label_8 = QLabel(Widget)
+        self.label_8.setObjectName(u"label_8")
+        sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Preferred)
+        sizePolicy2.setHorizontalStretch(0)
+        sizePolicy2.setVerticalStretch(0)
+        sizePolicy2.setHeightForWidth(self.label_8.sizePolicy().hasHeightForWidth())
+        self.label_8.setSizePolicy(sizePolicy2)
+
+        self.horizontalLayout_9.addWidget(self.label_8)
+
+        self.labelLeftStatus = QLabel(Widget)
+        self.labelLeftStatus.setObjectName(u"labelLeftStatus")
+
+        self.horizontalLayout_9.addWidget(self.labelLeftStatus)
+
+        self.label_7 = QLabel(Widget)
+        self.label_7.setObjectName(u"label_7")
+        sizePolicy2.setHeightForWidth(self.label_7.sizePolicy().hasHeightForWidth())
+        self.label_7.setSizePolicy(sizePolicy2)
+
+        self.horizontalLayout_9.addWidget(self.label_7)
+
+        self.labelRightStatus = QLabel(Widget)
+        self.labelRightStatus.setObjectName(u"labelRightStatus")
+
+        self.horizontalLayout_9.addWidget(self.labelRightStatus)
+
+
+        self.verticalLayout_2.addLayout(self.horizontalLayout_9)
+
         self.verticalLayout = QVBoxLayout()
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.horizontalLayout_4 = QHBoxLayout()
@@ -103,33 +135,38 @@ class Ui_Widget(object):
 
         self.label_3 = QLabel(Widget)
         self.label_3.setObjectName(u"label_3")
-        sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum)
-        sizePolicy2.setHorizontalStretch(0)
-        sizePolicy2.setVerticalStretch(0)
-        sizePolicy2.setHeightForWidth(self.label_3.sizePolicy().hasHeightForWidth())
-        self.label_3.setSizePolicy(sizePolicy2)
+        sizePolicy3 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum)
+        sizePolicy3.setHorizontalStretch(0)
+        sizePolicy3.setVerticalStretch(0)
+        sizePolicy3.setHeightForWidth(self.label_3.sizePolicy().hasHeightForWidth())
+        self.label_3.setSizePolicy(sizePolicy3)
 
         self.horizontalLayout_4.addWidget(self.label_3)
 
         self.lineEditName = QLineEdit(Widget)
         self.lineEditName.setObjectName(u"lineEditName")
-        sizePolicy3 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Maximum)
-        sizePolicy3.setHorizontalStretch(0)
-        sizePolicy3.setVerticalStretch(0)
-        sizePolicy3.setHeightForWidth(self.lineEditName.sizePolicy().hasHeightForWidth())
-        self.lineEditName.setSizePolicy(sizePolicy3)
+        sizePolicy4 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Maximum)
+        sizePolicy4.setHorizontalStretch(0)
+        sizePolicy4.setVerticalStretch(0)
+        sizePolicy4.setHeightForWidth(self.lineEditName.sizePolicy().hasHeightForWidth())
+        self.lineEditName.setSizePolicy(sizePolicy4)
 
         self.horizontalLayout_4.addWidget(self.lineEditName)
 
         self.pushButtonGestureNew = QPushButton(Widget)
         self.pushButtonGestureNew.setObjectName(u"pushButtonGestureNew")
-        sizePolicy4 = QSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Maximum)
-        sizePolicy4.setHorizontalStretch(0)
-        sizePolicy4.setVerticalStretch(0)
-        sizePolicy4.setHeightForWidth(self.pushButtonGestureNew.sizePolicy().hasHeightForWidth())
-        self.pushButtonGestureNew.setSizePolicy(sizePolicy4)
+        sizePolicy5 = QSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Maximum)
+        sizePolicy5.setHorizontalStretch(0)
+        sizePolicy5.setVerticalStretch(0)
+        sizePolicy5.setHeightForWidth(self.pushButtonGestureNew.sizePolicy().hasHeightForWidth())
+        self.pushButtonGestureNew.setSizePolicy(sizePolicy5)
 
         self.horizontalLayout_4.addWidget(self.pushButtonGestureNew)
+
+        self.pushButtonGestureDel = QPushButton(Widget)
+        self.pushButtonGestureDel.setObjectName(u"pushButtonGestureDel")
+
+        self.horizontalLayout_4.addWidget(self.pushButtonGestureDel)
 
 
         self.verticalLayout.addLayout(self.horizontalLayout_4)
@@ -140,11 +177,8 @@ class Ui_Widget(object):
         self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
         self.label_4 = QLabel(Widget)
         self.label_4.setObjectName(u"label_4")
-        sizePolicy5 = QSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Preferred)
-        sizePolicy5.setHorizontalStretch(0)
-        sizePolicy5.setVerticalStretch(0)
-        sizePolicy5.setHeightForWidth(self.label_4.sizePolicy().hasHeightForWidth())
-        self.label_4.setSizePolicy(sizePolicy5)
+        sizePolicy2.setHeightForWidth(self.label_4.sizePolicy().hasHeightForWidth())
+        self.label_4.setSizePolicy(sizePolicy2)
 
         self.horizontalLayout_5.addWidget(self.label_4)
 
@@ -160,11 +194,6 @@ class Ui_Widget(object):
 
         self.horizontalLayout_3 = QHBoxLayout()
         self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
-        self.pushButtonRecordSave = QPushButton(Widget)
-        self.pushButtonRecordSave.setObjectName(u"pushButtonRecordSave")
-
-        self.horizontalLayout_3.addWidget(self.pushButtonRecordSave)
-
         self.pushButtonRecordDel = QPushButton(Widget)
         self.pushButtonRecordDel.setObjectName(u"pushButtonRecordDel")
 
@@ -254,13 +283,17 @@ class Ui_Widget(object):
     def retranslateUi(self, Widget):
         Widget.setWindowTitle(QCoreApplication.translate("Widget", u"\u624b\u52bf\u5f55\u5236", None))
         self.label_5.setText(QCoreApplication.translate("Widget", u"\u624b\u52bf\u5217\u8868", None))
+        self.label_8.setText(QCoreApplication.translate("Widget", u"\u5de6\u624b:", None))
+        self.labelLeftStatus.setText("")
+        self.label_7.setText(QCoreApplication.translate("Widget", u"\u53f3\u624b:", None))
+        self.labelRightStatus.setText("")
         self.label_6.setText(QCoreApplication.translate("Widget", u"id:", None))
         self.labelId.setText(QCoreApplication.translate("Widget", u"0", None))
         self.label_3.setText(QCoreApplication.translate("Widget", u"\u624b\u52bf\u540d\u79f0:", None))
         self.pushButtonGestureNew.setText(QCoreApplication.translate("Widget", u"\u65b0\u52a8\u4f5c", None))
+        self.pushButtonGestureDel.setText(QCoreApplication.translate("Widget", u"\u5220\u9664", None))
         self.label_4.setText(QCoreApplication.translate("Widget", u"\u5f55\u5236\u6b21\u6570:", None))
         self.pushButtonRecordNew.setText(QCoreApplication.translate("Widget", u"\u65b0\u5f55\u5236", None))
-        self.pushButtonRecordSave.setText(QCoreApplication.translate("Widget", u"\u4fdd\u5b58", None))
         self.pushButtonRecordDel.setText(QCoreApplication.translate("Widget", u"\u5220\u9664", None))
         self.pushButtonRecordStart.setText(QCoreApplication.translate("Widget", u"\u5f55\u5236", None))
         self.pushButtonRecordEnd.setText(QCoreApplication.translate("Widget", u"\u7ed3\u675f\u5f55\u5236", None))

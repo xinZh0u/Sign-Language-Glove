@@ -11,19 +11,9 @@
 #  ...
 
 import csv
+import os
 import pandas as pd
 from enum import Enum
-
-class PAK_E(Enum):
-    TIME = 0,
-    PAK_POS_X = 1,
-    PAK_POS_Y = 2,
-    PAK_POS_Z = 3,
-    PAK_FINGER_1 = 4,
-    PAK_FINGER_2 = 5,
-    PAK_FINGER_3 = 6,
-    PAK_FINGER_4 = 7,
-    PAK_FINGER_5 = 8,
 
 class mcsv:
     fileName = ""
@@ -31,9 +21,12 @@ class mcsv:
     def __init__(self,name):
         self.fileName = name
         self.fieldnames = ['id', 'name']
-        with open(self.fileName, 'w', newline='') as csvfile:
-            writer = csv.DictWriter(csvfile, fieldnames=self.fieldnames)
-            writer.writeheader()
+        for i in range(1000):
+           self.fieldnames.append(str(i))
+        if not os.path.exists(self.fileName):
+            with open(self.fileName, 'w', newline='') as csvfile:
+                writer = csv.DictWriter(csvfile, fieldnames=self.fieldnames)
+                writer.writeheader()
 
     def printGesture(self):
         print(f"name:{self.fileName}")
@@ -85,6 +78,21 @@ class mcsv:
         for record in records:
             i+=1
         return i
+
+    def writeRecord(self,gesture_id,index,pak):
+        df = pd.read_csv(self.fileName)
+        filtered_df = df[df.iloc[:, 0] == gesture_id]
+
+        if not filtered_df.empty:
+            indices = filtered_df.index[index]
+            i = 0
+            for s in pak:
+                df[str(i)] = df[str(i)].astype(object)
+                df.loc[indices, str(i)] = s
+                i+=1
+            df.loc[indices, str(i)] = None  #以空为结束
+            df.to_csv(self.fileName, index=False)
+        #print(df)
 
     def delRecord(self,gesture_id,index):
         df = pd.read_csv(self.fileName)
@@ -144,3 +152,11 @@ class mcsv:
         if new_id !=0:
             self.addRecord(new_id)
         return new_id
+
+    def gestureDel(self,id):
+        df = pd.read_csv(self.fileName)
+        filtered_df = df[df['id'] == id]
+        if len(filtered_df)>0:
+            indices = df[df['id'] == id].index
+            df = df.drop(indices)
+            df.to_csv(self.fileName, index=False)
