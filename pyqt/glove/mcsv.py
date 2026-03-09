@@ -92,7 +92,6 @@ class mcsv:
                 i+=1
             df.loc[indices, str(i)] = None  #以空为结束
             df.to_csv(self.fileName, index=False)
-        #print(df)
 
     def delRecord(self,gesture_id,index):
         df = pd.read_csv(self.fileName)
@@ -106,6 +105,23 @@ class mcsv:
             if lenth == 1:
                 self.addRecord(gesture_id)
         return lenth
+
+    def getRecord(self,gesture_id,index):
+        df = pd.read_csv(self.fileName)
+        filtered_df = df[df.iloc[:, 0] == gesture_id]
+
+        if not filtered_df.empty:
+            indices = filtered_df.index[index]
+            #以字符串列表的形式返回过滤出来的一整行
+            record = filtered_df.iloc[index].astype(str).tolist()
+            list=[]
+            for s in record[2:]:
+                if s=='nan':
+                    break
+                list.append(s)
+            return list
+        else:
+            return None
 
     def openCsv():
         with open(self.fileName, 'r', encoding='utf-8') as f:

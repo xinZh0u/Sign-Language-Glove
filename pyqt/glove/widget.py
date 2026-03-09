@@ -12,12 +12,12 @@ from sqlite3 import *
 from BLE import BLE
 from mcsv import *
 import asyncio
-from model import model
+import _thread
+# from model import model
 
 MODEL_NBR_UUID = "df1413de-2317-4dca-8b04-551ccc2f399b"
 left_address  = "3C:DC:75:31:80:92"
 right_address = "3C:DC:75:31:80:00"
-
 
 hand_name = "J_Bip_L_Hand"
 
@@ -39,7 +39,7 @@ class PAK_E(Enum):
     PAK_FINGER_5 = 8,
 
 class Widget(QWidget):
-
+    PIPE_NAME = "/tmp/glove_pipe"
     my_csv = mcsv("data.csv")
 
     #当前的
@@ -92,9 +92,7 @@ class Widget(QWidget):
         self.bleRightStatus(0)
         self.myble.start()
 
-        global hand_name
-        global bond_name
-        self.my_model(hand_name,bone_name)
+        self.create_pipe()
 
     def log(self,text):
         if self.logAble:
@@ -164,6 +162,9 @@ class Widget(QWidget):
     def replayRecord(self):
         if self.unselectError() == 1:
             return
+        list =  self.my_csv.getRecord(self.gestureID,self.recordIndex)
+        for s in list:
+            self.log(s)
         self.log("回放中")
 
     @Slot()
@@ -267,6 +268,7 @@ class Widget(QWidget):
         else:
             print(pak[0]-self.leftStartTime,self.leftStartTime,len(self.leftPak))
             self.leftPak.append(str)
+            self.send_messages(str)
             self.plainLog(".")
     @Slot()
     def bleLeftStatus(self,status):
@@ -296,6 +298,25 @@ class Widget(QWidget):
         else:
             self.ui.labelRightStatus.setText("连接断开")
             self.ui.labelRightStatus.setStyleSheet("color: red;")
+
+    def create_pipe(self):
+        """创建命名管道"""
+        if not os.path.exists(self.PIPE_NAME):
+            os.mkfifo(self.PIPE_NAME)
+            print(f"管道 {self.PIPE_NAME} 创建成功")
+        else:
+            print(f"管道 {self.PIPE_NAME} 已存在")
+
+    def send_messages(self,message):
+        #for message in messages:
+        try:
+            # 以写方式打开管道发送消息
+            with open(self.PIPE_NAME, 'w') as pipe:
+                pipe.write(message)
+                print(f"发送: {message}")
+                time.sleep(0.1)  # 模拟处理间隔
+        except Exception as e:
+            print(f"发送异常: {e}")
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
