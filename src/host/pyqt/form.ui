@@ -265,6 +265,13 @@
                </property>
               </widget>
              </item>
+             <item>
+              <widget class="QPushButton" name="pushButtonDisconnectBlender">
+               <property name="text">
+                <string>断开blender</string>
+               </property>
+              </widget>
+             </item>
             </layout>
            </item>
           </layout>

@@ -21,7 +21,7 @@ class mcsv:
     def __init__(self,name):
         self.fileName = name
         self.fieldnames = ['id', 'name']
-        for i in range(1000):
+        for i in range(300):
            self.fieldnames.append(str(i))
         if not os.path.exists(self.fileName):
             with open(self.fileName, 'w', newline='') as csvfile:

@@ -222,6 +222,11 @@ class Ui_Widget(object):
 
         self.horizontalLayout.addWidget(self.pushButtonRecordReview)
 
+        self.pushButtonDisconnectBlender = QPushButton(Widget)
+        self.pushButtonDisconnectBlender.setObjectName(u"pushButtonDisconnectBlender")
+
+        self.horizontalLayout.addWidget(self.pushButtonDisconnectBlender)
+
 
         self.verticalLayout_5.addLayout(self.horizontalLayout)
 
@@ -298,6 +303,7 @@ class Ui_Widget(object):
         self.pushButtonRecordStart.setText(QCoreApplication.translate("Widget", u"\u5f55\u5236", None))
         self.pushButtonRecordEnd.setText(QCoreApplication.translate("Widget", u"\u7ed3\u675f\u5f55\u5236", None))
         self.pushButtonRecordReview.setText(QCoreApplication.translate("Widget", u"\u56de\u653e", None))
+        self.pushButtonDisconnectBlender.setText(QCoreApplication.translate("Widget", u"\u65ad\u5f00blender", None))
         self.label.setText(QCoreApplication.translate("Widget", u"\u8d77\u59cb\u4f4d\u7f6e", None))
         self.label_2.setText(QCoreApplication.translate("Widget", u"\u7ed3\u675f\u4f4d\u7f6e", None))
         self.pushButtonClearLog.setText(QCoreApplication.translate("Widget", u"\u6e05\u7a7a\u65e5\u5fd7", None))

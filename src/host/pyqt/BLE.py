@@ -40,6 +40,7 @@ class BLE(QThread):
                         try:
                             model_number = await client.read_gatt_char(uuid)
                             data = model_number.decode()
+                            #print(data)
                             #pak = [float(num) for num in data.split(',')]
                             if hand == left:
                                 self.leftReceive.emit(data)
@@ -59,11 +60,25 @@ class BLE(QThread):
             except Exception as e:
                 # 连接建立阶段发生的错误
                 print(f"连接失败: {e}，正在重连...")
-                self.leftStatus.emit(0)
+                if hand == left:
+                    self.leftStatus.emit(0)
+                if hand == right:
+                    self.rightStatus.emit(0)
                 #await asyncio.sleep(1)
 
 
-    def run(self):
-        asyncio.run(self.connect(left,self.left_address,self.uuid))
-        asyncio.run(self.connect(right,self.right_address,self.uuid))
 
+    async def run_both(self):
+        left_task = asyncio.create_task(self.connect(left,self.left_address,self.uuid))
+        right_task = asyncio.create_task(self.connect(right,self.right_address,self.uuid))
+        # 等待两个任务完成
+        await asyncio.gather(left_task, right_task)
+
+    def run(self):
+        asyncio.run(self.run_both())
+
+    def send(self,hand,str):
+        if hand == left:
+            self.leftFIFO.append(str)
+        if hand == right:
+            self.rightFIFO.append(str)
