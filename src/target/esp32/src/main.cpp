@@ -1,181 +1,45 @@
-// #include <BLEDevice.h>
-// #include <BLEServer.h>
-// #include <BLEUtils.h>
-// #include <BLE2902.h>
-// #include <MPU9250_ZX.h>
-// #include <Arduino.h>
-// #include <Wire.h>
-
-// // 设备配置
-// #define NAME_LEFT     //注释这行名字就是right 
-// #ifdef NAME_LEFT 
-// #define DEVICE_NAME "Glove_Left"
-// #else
-// #define DEVICE_NAME "Glove_Right"
-// #endif
-
-// #define SERVICE_UUID "df1413de-2317-4dca-8b04-551ccc2f399b"
-// #define CHARACTERISTIC_UUID "df1413de-2317-4dca-8b04-551ccc2f399b"
-
-// enum{
-//     PAK_POS_X,
-//     PAK_POS_Y,
-//     PAK_POS_Z,
-//     PAK_FINGER_1,
-//     PAK_FINGER_2,
-//     PAK_FINGER_3,
-//     PAK_FINGER_4,
-//     PAK_FINGER_5,
-//     PAK_NUM
-// };
-
-// BLECharacteristic *pCharacteristic;
-// bool deviceConnected = false;
-
-// // 蓝牙事件回调
-// class MyServerCallbacks: public BLEServerCallbacks {
-//     void onConnect(BLEServer* pServer) {
-//       deviceConnected = true;
-//       Serial.println("设备已连接");
-//     }
-//     void onDisconnect(BLEServer* pServer) {
-//       deviceConnected = false;
-//       Serial.println("设备已断开");
-//       pServer->startAdvertising(); // 重新广播
-//     }
-// };
-
-// void flex_init(){
-//   pinMode(0,INPUT);
-//   pinMode(1,INPUT);
-//   pinMode(2,INPUT);
-//   pinMode(3,INPUT);
-//   pinMode(4,INPUT);
-// }
-
-// void ble_init(){
-//   // 初始化BLE
-//   BLEDevice::init(DEVICE_NAME);
-//   BLEServer *pServer = BLEDevice::createServer();
-//   pServer->setCallbacks(new MyServerCallbacks());
-  
-//   // 创建服务与特征
-//   BLEService *pService = pServer->createService(SERVICE_UUID);
-//   pCharacteristic = pService->createCharacteristic(
-//     CHARACTERISTIC_UUID,
-//     BLECharacteristic::PROPERTY_READ | 
-//     BLECharacteristic::PROPERTY_WRITE | 
-//     BLECharacteristic::PROPERTY_NOTIFY
-//   );
-//   pCharacteristic->addDescriptor(new BLE2902());
-//   pService->start();
-  
-//   // 开始广播
-//   BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
-//   pAdvertising->addServiceUUID(SERVICE_UUID);
-//   pAdvertising->start();
-//   Serial.println("BLE广播已启动");
-// }
-
-// typedef struct{
-//     float data[PAK_NUM];
-// }Pak; 
-
-// void send_data(Pak pak){
-//     std::string str="";
-//     for(int i=0;i<PAK_NUM;i++){
-//       str=str+std::to_string(pak.data[i]);
-//       if(i!=PAK_NUM-1)str+=',';
-//     }
-//     Serial.printf("send:%s\n",str.c_str());
-//     pCharacteristic->setValue(str);
-//     pCharacteristic->notify();
-// }
-
-// Pak pak={0};
-
-// #define MPU9250_ADDR 0x68
-
-// MPU9250_ZX myMPU9250 = MPU9250_ZX(MPU9250_ADDR);
-
-// void setup() {
-//   flex_init();
-//   ble_init();
-//   Serial.begin(9600);
-//   Wire.setPins(8,9);
-//   Wire.begin();
-//   if(!myMPU9250.init()){
-//     Serial.println("MPU9250 does not respond");
-//   }
-//   else{
-//     Serial.println("MPU9250 is connected");
-//   }
-//   if(!myMPU9250.initMagnetometer()){
-//     Serial.println("Magnetometer does not respond");
-//   }
-//   else{
-//     Serial.println("Magnetometer is connected");
-//   }
-
-//   Serial.println("Position you MPU9250 flat and don't move it - calibrating...");
-//   delay(1000);
-//   myMPU9250.autoOffsets();
-//   Serial.println("Done!");
-  
-//   myMPU9250.enableGyrDLPF();
-//   myMPU9250.setGyrDLPF(MPU9250_DLPF_6);
-//   myMPU9250.setSampleRateDivider(5);
-//   myMPU9250.setGyrRange(MPU9250_GYRO_RANGE_2000);
-//   myMPU9250.setAccRange(MPU9250_ACC_RANGE_2G);
-//   myMPU9250.enableAccDLPF(true);
-//   myMPU9250.setAccDLPF(MPU9250_DLPF_6);
-//   myMPU9250.setMagOpMode(AK8963_CONT_MODE_100HZ);
-//   delay(200);
-// }
-
-// float getPitch(xyzFloat angleVal){
-//     float pitch = (atan2(-angleVal.x, sqrt(abs((angleVal.y*angleVal.y + angleVal.z*angleVal.z))))*180.0)/M_PI;
-//     return pitch;
-// }
-
-
-// float getRoll(xyzFloat angleVal){
-//     float roll = (atan2(angleVal.y, angleVal.z)*180.0)/M_PI;
-//     return roll;
-// }
-
-// float getYaw(xyzFloat angleVal){
-//     float roll = (atan2(angleVal.x, angleVal.y)*180.0)/M_PI;
-//     return roll;
-// }
-
-// double lastTime = millis();// / 1000;
-// void loop(){
-//     double timestamp = millis();// / 1000;
-//     myMPU9250.calcAll((timestamp-lastTime)/1000);
-//     lastTime = timestamp;
-//     //xyzFloat speed = myMPU9250.getGValues();
-//     xyzDouble speed =  myMPU9250.getSpeed();
-//     xyzDouble pos =  myMPU9250.getPos();
-//     eulerAngle angle =  myMPU9250.getFliterAngle();
-//     //Serial.printf("mpu9250:%f,%f,%f,%f,%f,%f\n",speed.x,speed.y,speed.z,pos.x,pos.y,pos.z);           
-//     Serial.printf("mpu9250:%f,%f,%f,%f,%f,%f\n",angle.pitch,angle.roll,myMPU9250.getPitch(),myMPU9250.getRoll(),angle.yaw,(timestamp-lastTime)/1000);
-    
-//     pak.data[0]=angle.yaw;
-//     pak.data[1]=angle.roll;
-//     pak.data[2]=angle.pitch;
-
-//     Serial.printf("read:");
-//     for(int i=0;i<5;i++){
-//       uint16_t data = analogRead(i);
-//       Serial.printf("%4d ",data);
-//       pak.data[PAK_FINGER_1+i]=90-data*90/4095;
-//     }
-//     Serial.printf("\n");
-//     send_data(pak);
-// }
-
 #include "SparkFunMPU9250-DMP.h"
+#include <BLEDevice.h>
+#include <BLEServer.h>
+#include <BLEUtils.h>
+#include <BLE2902.h>
+#include <glove.h>
+
+// 设备配置
+#define NAME_LEFT     //注释这行名字就是right 
+#ifdef NAME_LEFT 
+#define DEVICE_NAME "Glove_Left"
+Glove myglove = Glove(0,4,3,2,1);
+#else
+#define DEVICE_NAME "Glove_Right"
+Glove myglove = Glove(0,1,2,3,4);
+#endif
+
+#define CAL_PLAM_PIN  5
+#define CAL_FIST_PIN  6
+
+#define SERVICE_UUID "df1413de-2317-4dca-8b04-551ccc2f399b"
+#define CHARACTERISTIC_UUID "df1413de-2317-4dca-8b04-551ccc2f399b"
+
+//数据包格式
+enum{
+    PAK_TIME,
+    PAK_ROLL,
+    PAK_PITCH,
+    PAK_YAW,
+    PAK_FINGER_THUMB,
+    PAK_FINGER_INDEX,
+    PAK_FINGER_MIDDLE,
+    PAK_FINGER_RING,
+    PAK_FINGER_LITTLE,
+    PAK_NUM
+};
+
+typedef struct{
+    float data[PAK_NUM];
+}Pak; 
+
+Pak pak={0};
 
 MPU9250_DMP imu;
 
@@ -183,11 +47,82 @@ unsigned char regadd;
 char registeradress[5];
 unsigned char registerdata[]={33};
 
-//Prorotypes
-void printIMUData(void);
+BLECharacteristic *pCharacteristic;
+bool deviceConnected = false;
+
+// 蓝牙事件回调
+class MyServerCallbacks: public BLEServerCallbacks {
+    void onConnect(BLEServer* pServer) {
+      deviceConnected = true;
+      Serial.println("设备已连接");
+    }
+    void onDisconnect(BLEServer* pServer) {
+      deviceConnected = false;
+      Serial.println("设备已断开");
+      pServer->startAdvertising(); // 重新广播
+    }
+};
+ 
+// 蓝牙初始化
+void ble_init(){
+  BLEDevice::init(DEVICE_NAME);
+  BLEServer *pServer = BLEDevice::createServer();
+  pServer->setCallbacks(new MyServerCallbacks());
+  
+  // 创建服务与特征
+  BLEService *pService = pServer->createService(SERVICE_UUID);
+  pCharacteristic = pService->createCharacteristic(
+    CHARACTERISTIC_UUID,
+    BLECharacteristic::PROPERTY_READ | 
+    BLECharacteristic::PROPERTY_WRITE | 
+    BLECharacteristic::PROPERTY_NOTIFY
+  );
+  pCharacteristic->addDescriptor(new BLE2902());
+  //pCharacteristic->setCallbacks(new RxCallbacks());
+
+  pService->start();
+  
+  // 开始广播
+  BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
+  pAdvertising->addServiceUUID(SERVICE_UUID);
+  pAdvertising->start();
+  Serial.println("BLE广播已启动");
+}
+
+
+//蓝牙发送数据包
+void send_data(Pak pak){
+    std::string str="";
+    for(int i=0;i<PAK_NUM;i++){
+      str=str+std::to_string(pak.data[i]);
+      if(i!=PAK_NUM-1)str+=',';
+    }
+    //Serial.printf("send:%s\n",str.c_str());
+    pCharacteristic->setValue(str);
+    pCharacteristic->notify();
+}
+
+typedef struct {
+    float time;
+
+    float ax,ay,az;
+    float gx,gy,gz;
+    float mx,my,mz;
+
+    float sax,say,saz;
+    float pitch=0,roll=0,yaw=0;
+    float accX=0,accY=0,accZ=0;
+    float avX=0,avY=0,avZ=0;
+    float apX=0,apY=0,apZ=0;
+}IMU_DATA;
+
+IMU_DATA imu_data;
 
 void setup() {
   Serial.begin(115200);
+  pinMode(CAL_PLAM_PIN,INPUT_PULLUP);
+  pinMode(CAL_FIST_PIN,INPUT_PULLUP);
+  ble_init();
   Wire.setPins(8,9);
   Wire.begin();
   // Call imu.begin() to verify communication and initialize
@@ -210,129 +145,196 @@ void setup() {
         Serial.printf("imu.dmpBegin() suceeded\n");
     }
     Serial.printf("$GETEU,*\n");
-// while(1){
-//     if(pc.readable()){
-//         Serial.scanf("%s",&registeradress);
-//         regadd=(registeradress[0]-48)*100+(registeradress[1]-48)*10+(registeradress[2]-48);
-//         mbed_i2c_read(0x68,(unsigned)regadd,1,registerdata);
-//         pc.printf("%d is gotten from serial port, data at that register is %d\n",regadd,registerdata[0]);
-//     }
-
-//   // Check for new data in the FIFO
-//   if (imu.fifoAvailable()){//fifo is not being available
-//     led=0;
-//     wait_ms(1);
-//     led=1;
-//     wait_ms(1);
-//     // Use dmpUpdateFifo to update the ax, gx, mx, etc. values
-//     if ( imu.dmpUpdateFifo() == INV_SUCCESS){
-//       // computeEulerAngles can be used -- after updating the
-//       // quaternion values -- to estimate roll, pitch, and yaw
-//       imu.computeEulerAngles();
-//       printIMUData();
-//     }
-//   }
-//   else{
-//     led=0;
-//   }
-// }
-//   return 0;
+    myglove.loadCalibrate();
 }
 
-void printIMUData(void)
-{  
-  // After calling dmpUpdateFifo() the ax, gx, mx, etc. values
-  // are all updated.
-  // Quaternion values are, by default, stored in Q30 long
-  // format. calcQuat turns them into a float between -1 and 1
-  imu.update(UPDATE_ACCEL | UPDATE_GYRO | UPDATE_COMPASS);
-  float q0 = imu.calcQuat(imu.qw);
-  float q1 = imu.calcQuat(imu.qx);
-  float q2 = imu.calcQuat(imu.qy);
-  float q3 = imu.calcQuat(imu.qz);
-  float accelX = imu.calcAccel(imu.ax); // accelX is x-axis acceleration in g's
-  float accelY = imu.calcAccel(imu.ay); // accelY is y-axis acceleration in g's
-  float accelZ = imu.calcAccel(imu.az); // accelZ is z-axis acceleration in g's
 
-  float gyroX = imu.calcGyro(imu.gx); // gyroX is x-axis rotation in dps
-  float gyroY = imu.calcGyro(imu.gy); // gyroY is y-axis rotation in dps
-  float gyroZ = imu.calcGyro(imu.gz); // gyroZ is z-axis rotation in dps
+void bodyToNavigationFrame(IMU_DATA * data) {
+    // 将角度转换为弧度
+    // float roll_rad = data->roll * M_PI / 180.0f;
+    // float pitch_rad = data->pitch * M_PI / 180.0f;
+    // float yaw_rad = data->yaw * M_PI / 180.0f;
 
-  float magX = imu.calcMag(imu.mx); // magX is x-axis magnetic field in uT
-  float magY = imu.calcMag(imu.my); // magY is y-axis magnetic field in uT
-  float magZ = imu.calcMag(imu.mz); // magZ is z-axis magnetic field in uT
+    // 计算旋转矩阵（Z-Y-X顺序，即先横滚，再俯仰，最后偏航）
+    float cr = cosf(data->roll);   // cos(roll)
+    float sr = sinf(data->roll);   // sin(roll)
+    float cp = cosf(data->pitch);  // cos(pitch)
+    float sp = sinf(data->pitch);  // sin(pitch)
+    float cy = cosf(data->yaw);    // cos(yaw)
+    float sy = sinf(data->yaw);    // sin(yaw)
 
-  // float G = 0.0;
-  // G = sqrt(sq(gyroX) + sq(gyroY) + sq(gyroZ));
-  // float aX,aY,aZ;
-  // float aG = 0.9778;  //广州重力加速度
-  // aX = cos(imu.pitch*PI/180)*cos(imu.yaw*PI/180)*accelX;//-aG*sin(imu.pitch*PI/180));
-  // aY = cos(imu.roll*PI/180)*cos(imu.yaw*PI/180)*accelY;//-aG*sin(imu.roll*PI/180));
-  // aZ = cos(imu.roll*PI/180)*cos(imu.pitch*PI/180)*accelZ-1;
-  //Serial.printf("G:%4.4lf %4.4lf %4.4lf\n",accelX,accelY,accelZ);
-  //Serial.printf("G:%4.4lf %4.4lf %4.4lf\n",aX,aY,aZ);
-  //Serial.printf("G:%04d %04d %04d              %4d %4d %4d\n",(int)(accelX*1000),(int)(accelY*1000),(int)(accelZ*1000),(int)imu.pitch,(int)imu.roll,(int)imu.yaw);  
-  //Serial.printf(":%f,%f,%f\n",imu.roll,imu.pitch,imu.yaw);
-  //float G = cos(imu.roll*PI/180.0000f)*cos(imu.pitch*PI/180.0000f)*accelZ;
-  //Serial.printf("$,%4.4lf,%4.4lf,%4.4lf,%4.4lf,%4.4lf,%4.4lf,*\n",accelX,accelY,accelZ, imu.yaw,imu.pitch,imu.roll);
-  
+    // 旋转矩阵 R = R_z(yaw) * R_y(pitch) * R_x(roll)
+    // 但实际计算时，我们使用 R^T（逆矩阵）来转换向量
+    // 因为 v_nav = R^T * v_body
+    float R11 = cp * cy;
+    float R12 = cp * sy;
+    float R13 = -sp;
+
+    float R21 = sr * sp * cy - cr * sy;
+    float R22 = sr * sp * sy + cr * cy;
+    float R23 = sr * cp;
+
+    float R31 = cr * sp * cy + sr * sy;
+    float R32 = cr * sp * sy - sr * cy;
+    float R33 = cr * cp;
+
+    // 计算绝对坐标系下的加速度
+    data->accX = R11 * data->sax + R12 * data->say + R13 * data->saz;
+    data->accY = R21 * data->sax + R22 * data->say + R23 * data->saz;
+    data->accZ = R31 * data->sax + R32 * data->say + R33 * data->saz;
 }
 
-double aX,aY,aZ;
-double vX=0,vY=0,vZ=0;
-double pX=0,pY=0,pZ=0;
+// 去除重力影响
+void remove_gravity(IMU_DATA * data) {
+    // 将角度转换为弧度
+    // float roll_rad = euler_angle.roll * M_PI / 180.0f;
+    // float pitch_rad = euler_angle.pitch * M_PI / 180.0f;
+
+    // 计算重力在载体坐标系下的分量
+    float gx = sin(data->pitch);
+    float gy = -sin(data->roll) * cos(data->pitch);
+    float gz = cos(data->roll) * cos(data->pitch);
+
+    data->sax = data->ax;
+    data->say = data->ay;
+    data->saz = data->az;
+    
+    // 去除重力分量
+    data->sax += gx;
+    data->say += gy;
+    data->saz += gz;  // 减去重力加速度(1g)
+}
+
+void attitude_estimation(IMU_DATA * data) {
+    static float roll_acc, pitch_acc;
+    static float gyro_roll, gyro_pitch, gyro_yaw;
+
+    // 计算加速度计测量的角度
+    roll_acc = atan2f(data->ay,data->az) * 180.0f / M_PI;
+    pitch_acc = atan2f(-data->ax, sqrtf(data->ay * data->ay + data->az * data->az)) * 180.0f / M_PI;
+
+    float dt = imu_data.time;
+    // 计算陀螺仪积分角度
+    gyro_roll = data->roll + data->gx * dt;
+    gyro_pitch = data->pitch + data->gy * dt;
+    gyro_yaw = data->yaw + data->gz * dt;
+
+    // 互补滤波融合
+    float alpha = 0;//0.98f;
+    data->roll = alpha * gyro_roll + (1 - alpha) * roll_acc;
+    data->pitch = alpha * gyro_pitch + (1 - alpha) * pitch_acc;
+    data->yaw = gyro_yaw;  // 简化处理，实际应融合磁力计数据
+
+    data->pitch = data->pitch * M_PI /180;
+    data->roll  = data->roll  * M_PI /180;
+    data->yaw   = data->yaw   * M_PI /180;
+}
+
+void calc_v(IMU_DATA * data){
+  float dt = imu_data.time;
+  data->avX += data->accX * dt; 
+  data->avY += data->accY * dt; 
+  data->avZ += data->accZ * dt; 
+}
 
 void calc_acc(){
-  float accelX = imu.calcAccel(imu.ax); // accelX is x-axis acceleration in g's
-  float accelY = imu.calcAccel(imu.ay); // accelY is y-axis acceleration in g's
-  float accelZ = imu.calcAccel(imu.az); // accelZ is z-axis acceleration in g's
-  float aG = 0.9778;
-  double aaX =  cos(imu.pitch*PI/180)*cos(imu.yaw*PI/180)*accelX;
-  double aaY =  cos(imu.roll*PI/180)*cos(imu.yaw*PI/180)*accelY;
-  double aaZ =  cos(imu.roll*PI/180)*cos(imu.pitch*PI/180)*accelZ;
-  //aX = cos(imu.pitch*PI/180)*cos(imu.yaw*PI/180)*(accelX-sin(imu.pitch*PI/180));
-  //aY = cos(imu.roll*PI/180)*cos(imu.yaw*PI/180)*(accelY+sin(imu.pitch*PI/180)*sin(imu.roll*PI/180));
-  //aZ = cos(imu.roll*PI/180)*cos(imu.pitch*PI/180)*(accelZ-cos(imu.pitch*PI/180)*cos(imu.roll*PI/180));
-  aX = cos(imu.pitch*PI/180.0000f)*cos(imu.yaw*PI/180.0000f)*(accelX+aG*sin(imu.pitch*PI/180.0000f));
-  aY = cos(imu.roll*PI/180.0000f)*cos(imu.yaw*PI/180.0000f)*(accelY-aG*sin(imu.pitch*PI/180.0000f)*sin(imu.roll*PI/180.0000f));
-  aZ = cos(imu.roll*PI/180.0000f)*cos(imu.pitch*PI/180.0000f)*(accelZ+aG*cos(imu.pitch*PI/180.0000f)*cos(imu.roll*PI/180.0000f));
+  //imu_data.time = (imu.time-imu_data.time)/1000000.000000f;
+  imu_data.ax = imu.calcAccel(imu.ax);
+  imu_data.ay = imu.calcAccel(imu.ay); 
+  imu_data.az = imu.calcAccel(imu.az); 
+  imu_data.gx = imu.calcGyro(imu.gx);
+  imu_data.gy = imu.calcGyro(imu.gy);
+  imu_data.gz = imu.calcGyro(imu.gz);
+  imu_data.mx = imu.calcMag(imu.mx);
+  imu_data.my = imu.calcMag(imu.my);
+  imu_data.mz = imu.calcMag(imu.mz);
 
-  Serial.printf("%04d %04d %04d %04d %04d %04d\n",(int)(aX*1000),(int)(aY*1000),(int)(aZ*1000),(int)(aaX*1000),(int)(aaY*1000),(int)(aaZ*1000));
+  attitude_estimation(&imu_data);
+
+  //移除重力分量
+  remove_gravity(&imu_data);
+
+  //计算绝对坐标系加速度
+  bodyToNavigationFrame(&imu_data);
+
+  calc_v(&imu_data);
+  
+  Serial.printf(":%f,%f,%f,%f,%f,%f,%f\n",imu_data.sax,imu_data.say,imu_data.saz,
+    imu_data.avX,imu_data.avY,imu_data.avZ,imu_data.time);
+
+  //Serial.printf(":%f,%f,%f\n",imu_data.pitch,imu_data.roll,imu_data.yaw);
+
+  //Serial.printf(":%f,%f,%f\n",imu_data.gx,imu_data.gy,imu_data.gz);
+  //Serial.printf(":%f,%f,%f\n",imu_data.accX,imu_data.accY,imu_data.accZ);
+  //Serial.printf("%.3f %.3f %.3f\n",imu_data.accX,imu_data.accY,imu_data.accZ);
 } 
 
-void calc_speed(double deltaT){
-  vX += deltaT*aX;
-  vY += deltaT*aY;
-  vZ += deltaT*aZ;
-}
-
-void calc_pos(double deltaT){
-  pX += deltaT*vX;
-  pY += deltaT*vY;
-  pZ += deltaT*vZ;
-}
-
 void calc_all(double deltaT){
-  calc_acc();
-  calc_speed(deltaT);
-  calc_pos(deltaT);
+  // calc_acc();
+  // calc_speed(imu.time);
+  // calc_pos(imu.time);
 }
 
 void loop(){
-  // Check for new data in the FIFO
-  double lastTime = millis();// / 1000;
-  double timestamp = millis();// / 1000;
+  double lastTime = millis();
+  double timestamp = millis();
   if (imu.fifoAvailable()){//fifo is not being available
     // Use dmpUpdateFifo to update the ax, gx, mx, etc. values
+    
     if ( imu.dmpUpdateFifo() == INV_SUCCESS){
+      imu_data.time = (imu.time-imu_data.time);
       // computeEulerAngles can be used -- after updating the
       // quaternion values -- to estimate roll, pitch, and yaw
       imu.computeEulerAngles();
       //printIMUData();
       imu.update(UPDATE_ACCEL | UPDATE_GYRO | UPDATE_COMPASS);
       timestamp = millis();
-      calc_all((timestamp-lastTime)/1000.0000f);
+      //calc_all((timestamp-lastTime)/1000.0000f);
+      calc_acc();
+      
+
+      //打包数据并且发送
+      pak.data[PAK_TIME]=timestamp/1000.0000f;
+      pak.data[PAK_YAW]=imu.yaw;
+      pak.data[PAK_ROLL]=imu.roll;
+      pak.data[PAK_PITCH]=imu.pitch;
+      
+      float * angles = myglove.getAngles();
+      pak.data[PAK_FINGER_THUMB]  = angles[0];
+      pak.data[PAK_FINGER_INDEX]  = angles[1];
+      pak.data[PAK_FINGER_MIDDLE] = angles[2];
+      pak.data[PAK_FINGER_RING]   = angles[3];
+      pak.data[PAK_FINGER_LITTLE] = angles[4];
+      send_data(pak);
+      //Serial.printf("%f %f %f %f %f\n",angles[0],angles[1],angles[2],angles[3],angles[4]);
       lastTime = timestamp;
     }
   }
+  if(digitalRead(CAL_PLAM_PIN)==LOW){
+    delay(20);
+    if(digitalRead(CAL_PLAM_PIN)==LOW){
+      float * angles = myglove.getAngles();
+      for(int i=0;i<5;i++){
+        myglove.calibrate((FINGER_T)i,HAND_STATE_PALM);
+      }
+      myglove.saveCalibrate();
+      while (digitalRead(CAL_PLAM_PIN)==LOW);
+      delay(20);
+    }
+  }
+
+  if(digitalRead(CAL_FIST_PIN)==LOW){
+    delay(20);
+    if(digitalRead(CAL_FIST_PIN)==LOW){
+      float * angles = myglove.getAngles();
+      for(int i=0;i<5;i++){
+        myglove.calibrate((FINGER_T)i,HAND_STATE_FIST);
+      }
+      myglove.saveCalibrate();
+      while (digitalRead(CAL_FIST_PIN)==LOW);
+      delay(20);
+    }
+  }
+
+  
 }
