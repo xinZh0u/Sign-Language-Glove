@@ -1,0 +1,5 @@
+#[project]
+#name = "PySide Widgets Project"
+
+#[tool.pyside6-project]
+#files = ["BLE.py", "form.ui", "main.py", "mcsv.py", "mpipe.py", "ui_form.py"]
