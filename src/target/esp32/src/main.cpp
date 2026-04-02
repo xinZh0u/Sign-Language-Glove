@@ -106,11 +106,16 @@ typedef struct {
     float time;
 
     float ax,ay,az;
+
+    float ogx=2.836123,ogy=-2.999731,ogz=-2.268440;
+    int sum=0;
     float gx,gy,gz;
     float mx,my,mz;
 
     float sax,say,saz;
+    float pit=0,ro=0,ya=0;
     float pitch=0,roll=0,yaw=0;
+
     float accX=0,accY=0,accZ=0;
     float avX=0,avY=0,avZ=0;
     float apX=0,apY=0,apZ=0;
@@ -202,8 +207,10 @@ void remove_gravity(IMU_DATA * data) {
     // 去除重力分量
     data->sax += gx;
     data->say += gy;
-    data->saz += gz;  // 减去重力加速度(1g)
+    data->saz -= gz;  // 减去重力加速度(1g)
 }
+
+
 
 void attitude_estimation(IMU_DATA * data) {
     static float roll_acc, pitch_acc;
@@ -215,12 +222,12 @@ void attitude_estimation(IMU_DATA * data) {
 
     float dt = imu_data.time;
     // 计算陀螺仪积分角度
-    gyro_roll = data->roll + data->gx * dt;
-    gyro_pitch = data->pitch + data->gy * dt;
-    gyro_yaw = data->yaw + data->gz * dt;
+    gyro_roll = data->roll * 180/M_PI + data->gx * dt;
+    gyro_pitch = data->pitch * 180/M_PI + data->gy * dt;
+    gyro_yaw = data->yaw * 180/M_PI + data->gz * dt;
 
     // 互补滤波融合
-    float alpha = 0;//0.98f;
+    float alpha = 0;//.98f;
     data->roll = alpha * gyro_roll + (1 - alpha) * roll_acc;
     data->pitch = alpha * gyro_pitch + (1 - alpha) * pitch_acc;
     data->yaw = gyro_yaw;  // 简化处理，实际应融合磁力计数据
@@ -228,6 +235,7 @@ void attitude_estimation(IMU_DATA * data) {
     data->pitch = data->pitch * M_PI /180;
     data->roll  = data->roll  * M_PI /180;
     data->yaw   = data->yaw   * M_PI /180;
+    
 }
 
 void calc_v(IMU_DATA * data){
@@ -237,14 +245,18 @@ void calc_v(IMU_DATA * data){
   data->avZ += data->accZ * dt; 
 }
 
+double gTime = millis()/1000.0000f;
+
 void calc_acc(){
-  //imu_data.time = (imu.time-imu_data.time)/1000000.000000f;
+  //imu_data.time = imu.time/1000000.000000f;
+  //imu_data.time = millis()/1000.0000f - gTime;
+  //gTime = millis()/1000.0000f;
   imu_data.ax = imu.calcAccel(imu.ax);
   imu_data.ay = imu.calcAccel(imu.ay); 
   imu_data.az = imu.calcAccel(imu.az); 
-  imu_data.gx = imu.calcGyro(imu.gx);
-  imu_data.gy = imu.calcGyro(imu.gy);
-  imu_data.gz = imu.calcGyro(imu.gz);
+  imu_data.gx = (imu.calcGyro(imu.gx)-imu_data.ogx);
+  imu_data.gy = (imu.calcGyro(imu.gy)-imu_data.ogy);
+  imu_data.gz = (imu.calcGyro(imu.gz)-imu_data.ogz);
   imu_data.mx = imu.calcMag(imu.mx);
   imu_data.my = imu.calcMag(imu.my);
   imu_data.mz = imu.calcMag(imu.mz);
@@ -259,14 +271,19 @@ void calc_acc(){
 
   calc_v(&imu_data);
   
-  Serial.printf(":%f,%f,%f,%f,%f,%f,%f\n",imu_data.sax,imu_data.say,imu_data.saz,
-    imu_data.avX,imu_data.avY,imu_data.avZ,imu_data.time);
+  //Serial.printf(":%f,%f,%f,%f,%f,%f,%f\n",imu_data.sax,imu_data.say,imu_data.saz,
+  //  imu_data.avX,imu_data.avY,imu_data.avZ,0.00f);
+  imu_data.ogx += imu_data.gx; 
+  imu_data.ogy += imu_data.gy;
+  imu_data.ogz += imu_data.gz;
+  imu_data.sum ++;
+  //Serial.printf(":%f,%f,%f\n",imu_data.ogx/imu_data.sum,imu_data.ogy/imu_data.sum,imu_data.ogz/imu_data.sum);
+  //Serial.printf(":%f,%f,%f\n",imu_data.gx,imu_data.gy,imu_data.gz);
 
-  //Serial.printf(":%f,%f,%f\n",imu_data.pitch,imu_data.roll,imu_data.yaw);
+  //Serial.printf(":%f,%f,%f,%f\n",imu_data.pitch,imu_data.roll,imu_data.yaw,imu_data.time);
 
   //Serial.printf(":%f,%f,%f\n",imu_data.gx,imu_data.gy,imu_data.gz);
-  //Serial.printf(":%f,%f,%f\n",imu_data.accX,imu_data.accY,imu_data.accZ);
-  //Serial.printf("%.3f %.3f %.3f\n",imu_data.accX,imu_data.accY,imu_data.accZ);
+  Serial.printf(":%f,%f,%f,%f\n",imu_data.accX,imu_data.accY,imu_data.accZ,0.000f);
 } 
 
 void calc_all(double deltaT){
@@ -282,12 +299,13 @@ void loop(){
     // Use dmpUpdateFifo to update the ax, gx, mx, etc. values
     
     if ( imu.dmpUpdateFifo() == INV_SUCCESS){
-      imu_data.time = (imu.time-imu_data.time);
+      imu_data.time = (imu.time-imu_data.time)/1000000.0000f;
       // computeEulerAngles can be used -- after updating the
       // quaternion values -- to estimate roll, pitch, and yaw
       imu.computeEulerAngles();
       //printIMUData();
       imu.update(UPDATE_ACCEL | UPDATE_GYRO | UPDATE_COMPASS);
+      
       timestamp = millis();
       //calc_all((timestamp-lastTime)/1000.0000f);
       calc_acc();
