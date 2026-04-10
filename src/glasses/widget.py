@@ -3,6 +3,7 @@ from PySide6.QtWidgets import *
 from PySide6.QtGui import *
 from PySide6.QtCore import *
 from wifi import *
+import json
 
 class CustomListItemWidget(QWidget):
     icon_size = 64
@@ -65,11 +66,7 @@ class CustomListItemWidget(QWidget):
                 color: #34495e;
             }
         """)
-        #self.text_browser.setMaximumHeight(12000)
         self.text_browser.setMinimumHeight(80)
-        # self.text_browser.setSizePolicy(
-        #     QWidget.Expanding, 
-        #     QWidget.Expanding)
 
         self.layout.addLayout(self.title_layout)
         self.layout.addWidget(self.text_browser)
@@ -93,33 +90,22 @@ class CustomListItemWidget(QWidget):
 class CustomListWidget(QWidget):
     my_wifi = wifi("127.0.0.1",7399)
 
-    persons_name_map = [
-        {
-        'id':'myself',
-        'name':'我',
-        'icon':'/home/gzx/Pictures/东方夜雀食堂 头像&表情包 ~ Avatar Image/本体/00-01.png'
-        },
-        {
-        'id':'xg',
-        'name':'西瓜',
-        'icon':'/home/gzx/Pictures/东方夜雀食堂 头像&表情包 ~ Avatar Image/本体/34-01.png'
-        },
-        {
-        'id':'mh',
-        'name':'妹红',
-        'icon':'/home/gzx/Pictures/东方夜雀食堂 头像&表情包 ~ Avatar Image/本体/28-04.png'
-        },                              
-    ]
+    # 人物姓名id映射关系
+    persons_name_map = []
 
     items_data = []
     def __init__(self):
         super().__init__()
         self.setWindowTitle("语音识别系统")
-        self.resize(600, 500)
+        self.showFullScreen()
+        #self.resize(600, 500)
         self.my_wifi.get_message.connect(self.recv_message)
         self.my_wifi.start()
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0,0,0,0);
+
+        # 导入人物映射信息
+        self.load_persons_map()
 
         # 创建列表控件
         self.list_widget = QListWidget()
@@ -145,6 +131,16 @@ class CustomListWidget(QWidget):
         #添加多个自定义项
         self.update_list()
 
+    def save_persons_map(self):
+        print("save json")
+        with open('persons_name_map.json', 'w', encoding='utf-8') as f:
+            json.dump(self.persons_name_map, f, ensure_ascii=False, indent=4)
+
+    def load_persons_map(self):
+        print("load json")
+        with open('persons_name_map.json', 'r', encoding='utf-8') as f:
+            self.persons_name_map = json.load(f)
+
     def update_list(self):
         self.list_widget.clear()
         for item_data in self.items_data:
@@ -169,9 +165,12 @@ class CustomListWidget(QWidget):
         print(mes)
         align = 0 
         id = ""
+        # 判断id是否有具体的人物对应关系
         if self.items_data!=[] and mes[0]==self.items_data[-1]["id"]:
+            # 说话人未改变,对白内容增加
             self.items_data[-1]["text"]+=mes[1]
         else:
+            # 说话人改变,创建新消息
             id = mes[0]
             label = mes[0]
             text = mes[1]
