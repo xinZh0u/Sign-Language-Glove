@@ -5,6 +5,7 @@ from PySide6.QtGui import *
 from chatwidget import *
 from person_setting import *
 from devicewidget import *
+from recordwidget import *
 from wifi import *
 
 chat_ip = "127.0.0.1"
@@ -15,7 +16,8 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("知声客户端")
-        self.showFullScreen()
+        #self.showFullScreen()
+        self.setGeometry(100, 100, 800, 600)
         
         self.my_wifi.get_message.connect(self.recv_message)
         self.my_wifi.start()
@@ -59,14 +61,17 @@ class MainWindow(QMainWindow):
         self.chat_widget = ChatWidget()
         self.device_widget = DeviceManager()
         self.member_widget = MemberManager()
+        self.record_widget = RecordWidget()
         self.add_page("聊天", self.chat_widget)
         self.add_page("设备状态", self.device_widget)
         self.add_page("成员设置", self.member_widget)
+        self.add_page("录制", self.record_widget)
         
-        
+        self.content_stack.setCurrentIndex(3)
         # 绑定导航事件
         self.nav_list.currentRowChanged.connect(self.content_stack.setCurrentIndex)
-
+        # 在这里添加代码设置默认为”录制“页面
+        
         # 将左右组件加入主布局
         main_layout.addWidget(self.nav_list)
         main_layout.addWidget(self.content_stack)
@@ -86,6 +91,11 @@ class MainWindow(QMainWindow):
             self.chat_widget.process_chat_message(message[1:])
         if message[0] == '!':
             self.device_widget.process_device_message(message[1:])
+        if message[0] == '%':
+            self.device_widget.process_cali_message(message[1:])
+        if message[0] == 'R':
+            self.device_widget.process_rotate_message(message[1:])
+            self.record_widget.process_message(message[1:])
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

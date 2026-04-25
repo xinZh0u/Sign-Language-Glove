@@ -1,8 +1,10 @@
 import sys
+import math
 from enum import Enum , auto
 from PySide6.QtWidgets import *
 from PySide6.QtGui import *
 from PySide6.QtCore import *
+from PySide6.QtCharts import *
 
 # 设备ID枚举
 class Dev(Enum):
@@ -19,15 +21,127 @@ class Dev(Enum):
   ONLINE  = True
 DEV = Dev    
 
-device_icon_path = "icon/37-01.png"
+device_icon_path = "icon/device.png"
+
+class BoneChart(QWidget):
+    SHOULDER = 12
+    BIG = 10
+    SMALL = 10
+    MAP_WIDTH = 40
+    MAP_HEIGHT = 30
+    
+    bones = [[0,0]] * DEV.NUM.value
+    def __init__(self):
+        super().__init__()
+        layout = QVBoxLayout(self)
+
+        # 创建折线序列
+        self.line_series = QLineSeries()
+        self.line_series.setBrush(QColor(0, 0, 255))
+        
+        # 创建散点序列
+        self.scatter_series = QScatterSeries()
+        self.scatter_series.setMarkerSize(10.0)  
+        self.scatter_series.setBrush(QColor(255, 0, 0))
+            
+        # 创建图表对象
+        self.chart = QChart()
+        self.chart.legend().hide()
+
+
+        # 创建图表视图
+        chart_view = QChartView(self.chart)
+    
+        self.update_chart([[0,0,0],[0,0,0]])
+        self.chart.addSeries(self.line_series)
+        self.chart.addSeries(self.scatter_series)
+        layout.addWidget(chart_view)
+        
+        # 隐藏网格线
+        self.axis_x = QValueAxis()
+        self.axis_x.setMax(self.MAP_WIDTH)
+        self.axis_x.setTitleText("X 轴")
+        self.axis_x.setVisible(False)
+        self.axis_x.setLabelFormat("%.1f")
+        self.axis_x.setGridLineVisible(False)
+        self.chart.addAxis(self.axis_x, Qt.AlignBottom)
+        self.line_series.attachAxis(self.axis_x)
+        self.scatter_series.attachAxis(self.axis_x)
+
+        self.axis_y = QValueAxis()
+        self.axis_y.setMax(self.MAP_HEIGHT)
+        self.axis_y.setVisible(False)
+        self.axis_y.setTitleText("Y 轴")
+        self.axis_y.setLabelFormat("%.2f")
+        self.line_series.attachAxis(self.axis_y)
+        self.scatter_series.attachAxis(self.axis_y)
+        
+        self.axis_y.setGridLineVisible(False)  
+        self.chart.addAxis(self.axis_y, Qt.AlignLeft)
+        self.line_series.attachAxis(self.axis_y)
+        self.scatter_series.attachAxis(self.axis_y)
+        
+        self.update_chart([[10,10,10],[0,0,0]])
+    
+    def update_chart(self,bones):
+        # 添加数据点 (模拟 sin(x))
+        self.line_series.clear()
+        self.scatter_series.clear()
+        #self.chart.removeAllSeries()
+    
+        points = [[0,0,0]] * (Dev.NUM.value - 3)
+        
+        rotate = [[0,0,0]] * Dev.NUM.value
+        # x,y，下一个关节的旋转
+        
+        # 左手
+        # yaw = 90
+        # pitch = 45
+        # roll = 90
+        rotate[1] = bones[0]#[pitch,yaw,roll]
+        #print(rotate[1])
+        points[1] = [self.MAP_WIDTH/2-self.SHOULDER/2, self.MAP_HEIGHT/2,0]
+        # x = self.BIG * -math.cos(math.radians(rotate[1][0])) 
+        # y = self.BIG * math.sin(math.radians(rotate[1][0])) * math.cos(math.radians(rotate[1][1]))    
+        # z = self.BIG * -math.sin(math.radians(rotate[1][1]))
+        
+        x = self.BIG * -math.cos(math.radians(rotate[1][0])) * math.cos(math.radians(rotate[1][1]))
+        y = self.BIG * math.sin(math.radians(rotate[1][0])) #//* math.cos(math.radians(rotate[1][1]))    
+        z = self.BIG * -math.sin(math.radians(rotate[1][1]))
+        points[0] = [points[1][0]+x, points[1][1]+y, points[1][2] + z] 
+        
+        # 右手
+        # yaw = 0
+        # pitch = 0
+        # roll = 90
+        rotate[2] = bones[1]#[pitch,yaw,roll]
+        #print(rotate[1])
+        points[2] = [self.MAP_WIDTH/2+self.SHOULDER/2, self.MAP_HEIGHT/2,0]
+        x = self.BIG * math.cos(math.radians(rotate[2][0])) * math.cos(math.radians(rotate[2][1]))
+        y = self.BIG * math.sin(math.radians(rotate[2][0]))
+        z = self.BIG * -math.sin(math.radians(rotate[2][1]))
+        points[3] = [points[2][0]+x,points[2][1]+y,points[2][2]+z]
+        
+        for i,p in enumerate(points):
+            self.line_series.append(p[0], p[1])
+            self.scatter_series.append(p[0], p[1])
+        
+        #self.chart.addSeries(self.line_series)
+        #self.chart.addSeries(self.scatter_series)
+        
+        # self.line_series.attachAxis(self.axis_x)
+        # self.scatter_series.attachAxis(self.axis_x)
+        # self.line_series.attachAxis(self.axis_y)
+        # self.scatter_series.attachAxis(self.axis_y)
+        self.chart.update()
 
 class DeviceItemWidget(QWidget):
-    def __init__(self, icon_path, device_name, status, parent=None):
+    def __init__(self, icon_path, device_name, device_id,status, parent=None):
         super().__init__(parent)
-        
+        self.device_id = device_id
         # 主布局：水平排列
         main_layout = QHBoxLayout(self)
-        main_layout.setContentsMargins(10, 5, 10, 5)
+        #main_layout.setContentsMargins(10, 5, 10, 5)
         main_layout.setSpacing(15)
         
         # 左侧图标
@@ -78,56 +192,73 @@ class DeviceManager(QWidget):
         
         layout = QVBoxLayout(self)
         
-        # 列表控件
-        self.list_widget = QListWidget()
-        self.list_widget.setVerticalScrollMode(QListWidget.ScrollPerPixel)
-        self.list_widget.setFrameShape(QFrame.NoFrame)
-        self.list_widget.setStyleSheet("""
-            QListWidget {
-                border: none;
-                outline: none;
-                background-color: #f8f9fa;
-            }
-            QListWidget::item {
-                border-bottom: 1px solid #e9ecef;
-                padding: 0px;
-            }
-            QListWidget::item:selected {
-                background-color: #e3f2fd;
-                border-radius: 4px;
-            }
-        """)
+        self.dev_layout = QHBoxLayout(self)
+        layout.addLayout(self.dev_layout)
+        self.v_layout = QVBoxLayout(self)
+        layout.addLayout(self.v_layout)
         
         # 添加示例设备
-        self.add_device(device_icon_path, "中心", DEV.OFFLINE.value)
-        self.add_device(device_icon_path, "左大臂", DEV.OFFLINE.value)
-        self.add_device(device_icon_path, "左小臂", DEV.OFFLINE.value)
-        self.add_device(device_icon_path, "左手套", DEV.OFFLINE.value)
-        self.add_device(device_icon_path, "右大臂", DEV.OFFLINE.value)
-        self.add_device(device_icon_path, "右小臂", DEV.OFFLINE.value)
-        self.add_device(device_icon_path, "右手套", DEV.OFFLINE.value)
+        self.add_device(device_icon_path, "左手套", DEV.L_GLOVE.value, DEV.OFFLINE.value)
+        self.add_device(device_icon_path, "左小臂", DEV.L_SMALL.value, DEV.OFFLINE.value)
+        self.add_device(device_icon_path, "左大臂", DEV.L_BIG.value, DEV.OFFLINE.value)
+        self.add_device(device_icon_path, "中心"  , DEV.CENTER.value, DEV.OFFLINE.value)
+        self.add_device(device_icon_path, "右大臂", DEV.R_BIG.value, DEV.OFFLINE.value)
+        self.add_device(device_icon_path, "右小臂", DEV.R_SMALL.value, DEV.OFFLINE.value)
+        self.add_device(device_icon_path, "右手套", DEV.R_GLOVE.value, DEV.OFFLINE.value)
         
-        layout.addWidget(self.list_widget)
+        # 显示校准的label
+        self.cali_label = QLabel()
+        self.cali_label.setVisible(False)
+        self.cali_label.setFont(QFont("Segoe UI", 14))
+        self.cali_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+        self.v_layout.addWidget(self.cali_label)
         
-    def add_device(self, icon_path, device_name, status):
-        """添加一个设备项到列表"""
-        item = QListWidgetItem()
-        item.setSizeHint(QSize(0, 50))  # 固定高度
-        widget = DeviceItemWidget(icon_path, device_name, status)
-        self.list_widget.addItem(item)
-        self.list_widget.setItemWidget(item, widget)
+        self.bone_chart = BoneChart()
+        self.po = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+        self.bone_chart.setSizePolicy(self.po)
+        self.v_layout.addWidget(self.bone_chart)
+        
+    def add_device(self, icon_path, device_name, device_id,status):
+        # 添加一个设备项
+        widget = DeviceItemWidget(icon_path, device_name,device_id, status)
+        self.dev_layout.addWidget(widget)
         self.devices.append(widget)
     
     def set_device(self,id,status):
-        self.devices[id].set_status(status)
+        for dev in self.devices:
+            if dev.device_id == id:
+                dev.set_status(status)
         
     def process_device_message(self,message):
         mes = message.split(':')
-        print(mes)
+        #print(mes)
         if len(mes) < 2:
             return
         self.set_device(int(mes[0]),int(mes[1]))
-
+    
+    def process_cali_message(self,message):
+        mes = message.split(':')
+        #print(mes)
+        if len(mes) < 2:
+            return
+        if mes[0] == '0':
+            self.cali_label.setVisible(True)
+            self.cali_label.setText(f"校准倒计时:{mes[1]}s")
+        if mes[0] == '1':
+            self.cali_label.setVisible(False)
+            self.cali_label.setText("校准完成！")
+    
+    def process_rotate_message(self,message):
+        mes = [float(num) for num in message.split(',')]
+        #print(mes)
+        if len(mes) < 6:
+            return
+        #print("update")
+        self.bone_chart.update_chart([mes[0:2],mes[3:5]])
+    
+    def rotate(self,nums):
+        self.bone_chart.update_chart([nums[0:2],nums[3:5]])
+        
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = DeviceManager()

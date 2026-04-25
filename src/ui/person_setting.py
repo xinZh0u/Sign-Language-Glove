@@ -5,7 +5,7 @@ from PySide6.QtWidgets import *
 from PySide6.QtCore import *
 
 
-class MemberManager(QMainWindow):
+class MemberManager(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("角色成员管理器")
@@ -16,9 +16,9 @@ class MemberManager(QMainWindow):
         self.members = self.load_members()
 
         # 主控件
-        central_widget = QWidget()
-        self.setCentralWidget(central_widget)
-        layout = QVBoxLayout(central_widget)
+        #central_widget = QWidget()
+        #self.setCentralWidget(central_widget)
+        layout = QVBoxLayout(self)
 
         # 输入区域
         input_layout = QHBoxLayout()
