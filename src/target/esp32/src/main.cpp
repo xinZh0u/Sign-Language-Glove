@@ -13,7 +13,7 @@
 #define DEV_TYPE_R_SMALL 5
 #define DEV_TYPE_R_GLOVE 6
 
-#define DEV_TYPE DEV_TYPE_L_BIG
+#define DEV_TYPE DEV_TYPE_R_GLOVE
 
 // 设备类型配置
 #if DEV_TYPE == DEV_TYPE_L_GLOVE
@@ -32,9 +32,11 @@ Glove myglove = Glove(0, 1, 2, 3, 4);
 #define BTN_PIN 21
 
 // Wi-Fi 配置
-#define ssid "Oneplus 11"
-#define password "19226782798"
-#define remoteIP "10.42.0.1" // 目标IP
+#define ssid "Xiaomi_413"
+#define password "66666666"
+// #define ssid "Oneplus 11"
+// #define password "19226782798"
+#define remoteIP "10.139.98.154" // 目标IP
 #define remotePort 4321      // 目标端口
 #define localPort 1234       // 本地端口
 // 陀螺仪
@@ -104,6 +106,7 @@ void send_message(const char *message)
     // Udp.write((uint8_t *)message, (uint8_t)(strlen(message) + 1)); // 把数据写入发送缓冲区
     int result = Udp.endPacket();
 
+    Serial.println(WiFi.localIP());
     if (result == 1)
     {
         Serial.println("UDP packet sent successfully");
@@ -124,7 +127,7 @@ void send_pak()
             message += ',';
     }
     Serial.println(message.c_str());
-    // send_message(message.c_str());
+    send_message(message.c_str());
 }
 
 /*********************IMU**************************/
@@ -248,16 +251,26 @@ void calculate_attitude(float ax, float ay, float az,
 
 /*********************主程序**************************/
 float last_time;
-
+uint8_t newMACAddress[] = {0x34, 0xAA, 0xA4, 0x17, 0x2D, 0x56};
 void setup()
 {
-    Serial.begin(115200);
+    Serial.begin(9600);
+    esp_base_mac_addr_set(&newMACAddress[0]); //  在启动AP前将自定义地址装载，此方法需要在调用esp_read_mac()前使用，否则无效！ 
+  
     pinMode(CAL_PLAM_PIN, INPUT_PULLUP);
     pinMode(CAL_FIST_PIN, INPUT_PULLUP);
     pinMode(BTN_PIN, INPUT_PULLUP);
     Wire.begin(8, 9);
-    // wifi_init();
-
+    wifi_init();
+    // while (1)
+    // {
+    //     /* code */
+    //     Serial.println();
+    //     Serial.print("Connected with IP: ");
+    //     Serial.println(WiFi.localIP());
+    //     sleep(1);
+    // }
+    
 #ifdef IS_GLOVE
     myglove.loadCalibrate();
 #endif
@@ -301,6 +314,7 @@ void loop()
 #endif
 
         send_pak();
+        Serial.printf(":%f,%f,%f\n",pitch,yaw,roll);
     }
 
 #ifdef IS_GLOVE
@@ -340,7 +354,7 @@ void loop()
         }
     }
 #endif
-#ifdef IS_TRACKER
+//#ifdef IS_TRACKER
     // 检测按键按下
     if (digitalRead(BTN_PIN) == LOW)
     {
@@ -368,5 +382,35 @@ void loop()
         pak.data[PAK_BTN] = 0;
         press_time = 0;
     }
-#endif
+//#endif
 }
+
+// #include <WiFi.h>
+
+// // ------------------ 连接WiFi ------------------
+// const char* ssid = "Xiaomi_413";
+// const char* password = "66666666";
+
+// void setup() {
+//     // WiFi
+//     Serial.begin(9600); //开启监听串口，输出日志以方便调试
+//     WiFi.begin(ssid, password); //调用 WiFi.begin() 方法开始连接 WiFi（此过程异步）w
+
+//     Serial.print("Connecting to ");
+//     Serial.println(ssid);
+
+//     while (WiFi.status() != WL_CONNECTED) {
+//         delay(500);
+//         Serial.print(".");
+//         Serial.print("Status: ");
+//         Serial.println(WiFi.status());
+//     } //持续连接，直到连接成功
+
+//     Serial.println("\nWiFi connected!");
+//     Serial.print("IP address: ");
+//     Serial.println(WiFi.localIP()); //输出内网 IP
+// }
+
+// void loop(){
+
+// }
