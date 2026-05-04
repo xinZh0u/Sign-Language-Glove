@@ -11,12 +11,22 @@
     },
     {
         "id": "mh",
-        "name": "妹红",
-        "icon": "/home/gzx/Pictures/东方夜雀食堂 头像&表情包 ~ Avatar Image/本体/28-04.png"
+        "name": "xz",
+        "icon": "/home/gzx/Pictures/东方夜雀食堂 头像&表情包 ~ Avatar Image/本体/02-01.png"
     },
     {
         "id": "lm",
         "name": "cg",
         "icon": "/home/gzx/Pictures/东方夜雀食堂 头像&表情包 ~ Avatar Image/本体/08-01.png"
+    },
+    {
+        "id": "",
+        "name": "",
+        "icon": ""
+    },
+    {
+        "id": "person",
+        "name": "对方",
+        "icon": "/home/gzx/Pictures/东方夜雀食堂 头像&表情包 ~ Avatar Image/本体/08-04.png"
     }
 ]

@@ -27,5 +27,5 @@ class wifi(QThread):
         while True:
             # 接受数据
             data, client_address = server_socket.recvfrom(1024)
-            #print(f"Received: {data.decode()} from {client_address}")
+            print(f"Received: {data.decode()} from {client_address}")
             self.get_message.emit(data.decode())

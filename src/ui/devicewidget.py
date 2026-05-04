@@ -81,7 +81,7 @@ class BoneChart(QWidget):
         self.line_series.attachAxis(self.axis_y)
         self.scatter_series.attachAxis(self.axis_y)
         
-        self.update_chart([[10,10,10],[0,0,0]])
+        #self.update_chart([[10,10,10],[0,0,0]])
     
     def update_chart(self,bones):
         # 添加数据点 (模拟 sin(x))
@@ -213,10 +213,29 @@ class DeviceManager(QWidget):
         self.cali_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
         self.v_layout.addWidget(self.cali_label)
         
+        self.bone_box = QHBoxLayout()
+        
         self.bone_chart = BoneChart()
         self.po = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
         self.bone_chart.setSizePolicy(self.po)
-        self.v_layout.addWidget(self.bone_chart)
+        
+        self.bone_fin_l = []
+        for i in range(5):
+            slider = QSlider(Qt.Orientation.Vertical)
+            slider.setRange(0,90)
+            self.bone_fin_l.append(slider)
+            self.bone_box.addWidget(slider)
+            
+        self.bone_box.addWidget(self.bone_chart)
+    
+        self.bone_fin_r = []
+        for i in range(5):
+            slider = QSlider(Qt.Orientation.Vertical)
+            slider.setRange(0,90)
+            self.bone_fin_r.append(slider)
+            self.bone_box.addWidget(slider)
+        
+        self.v_layout.addLayout(self.bone_box)
         
     def add_device(self, icon_path, device_name, device_id,status):
         # 添加一个设备项
@@ -248,16 +267,24 @@ class DeviceManager(QWidget):
             self.cali_label.setVisible(False)
             self.cali_label.setText("校准完成！")
     
+    def update_fingers(self,left,right):
+        for i,slider in enumerate(self.bone_fin_l):
+            slider.setValue(int(left[i]))
+        for i,slider in enumerate(self.bone_fin_r):
+            slider.setValue(int(right[i]))    
+            
     def process_rotate_message(self,message):
         mes = [float(num) for num in message.split(',')]
-        #print(mes)
+        print(mes)
         if len(mes) < 6:
             return
         #print("update")
-        self.bone_chart.update_chart([mes[0:2],mes[3:5]])
-    
+        self.bone_chart.update_chart([mes[0:2],mes[8:10]])
+        self.update_fingers(mes[3:8],mes[11:16])
+        
     def rotate(self,nums):
-        self.bone_chart.update_chart([nums[0:2],nums[3:5]])
+        self.bone_chart.update_chart([nums[0:2],nums[8:10]])
+        #self.update_fingers(nums[3:8],nums[11:16])
         
 if __name__ == "__main__":
     app = QApplication(sys.argv)
